@@ -1,0 +1,47 @@
+.App--container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.App--board {
+  width: 500px;
+  height: 500px;
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: 0.5em;
+}
+
+.App--board-container {
+  background: #fff;
+  display: flex;
+}
+
+.App--cell {
+  width: 33.33%;
+  height: 33.33%;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #333;
+  cursor: pointer;
+}
+
+.App--cell--active {
+  background-color: #e9e9e9;
+}
+
+.App--info {
+  margin-top: 0.5em;
+}
+
+.history {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  background: red;
+}
