@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { createGame, getGames, deleteGame } from "../tic-tac-toe";
+import { createGame, getGames, deleteGame } from "../api";
 import { useNavigate, Link } from "react-router-dom";
 import "./index.css";
 import "../globals.css";
@@ -49,7 +49,6 @@ function GameLobby() {
       setLoading(false);
     }
   };
-
 
   const onDeleteGame = async (gameId: string, e: React.MouseEvent) => {
     e.preventDefault();

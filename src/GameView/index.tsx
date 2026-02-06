@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { createGame, makeMove, getGame, resetGame } from "../tic-tac-toe";
+import { createGame, makeMove, getGame, resetGame } from "../api";
 import { useParams, Link } from "react-router-dom";
 import "./index.css";
 
