@@ -106,8 +106,9 @@ function GameView() {
   const wsRef = useRef<WebSocket | null>(null);
 
   const connectWebSocket = useCallback(() => {
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.hostname}:3001/api/games/${gameId}/ws`;
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || `http://localhost:3001/api`;
+    const wsBaseUrl = apiBaseUrl.replace(/^http/, "ws");
+    const wsUrl = `${wsBaseUrl}/games/${gameId}/ws`;
 
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
