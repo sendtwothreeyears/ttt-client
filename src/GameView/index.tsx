@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { createGame, makeMove, getGame, resetGame } from "../api";
 import { useParams, Link } from "react-router-dom";
 import "./index.css";
@@ -9,10 +9,58 @@ function GameView() {
   const { gameId } = useParams();
   const [gameState, setGameState] = useState<Cell[]>([]);
   const [currentPlayer, setCurrentPlayer] = useState<string>("X");
+  const [isConnected, setIsConnected] = useState(false);
+  const wsRef = useRef<WebSocket | null>(null);
+
+  const connectWebSocket = useCallback(() => {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.hostname}:3001/api/games/${gameId}/ws`;
+
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      setIsConnected(true);
+      console.log("WebSocket connected");
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        const {
+          room: { board },
+        } = data;
+        if (data.type === "gameUpdate") {
+          setGameState(board);
+        }
+      } catch (error) {
+        console.error("Failed to parse WebSocket message:", error);
+      }
+    };
+
+    ws.onclose = (event) => {
+      setIsConnected(false);
+      console.log("WebSocket disconnected");
+
+      if (event.code === 1008) {
+        // Game not found
+        console.error("Game not found");
+      } else {
+        // Attempt to reconnect after a delay
+        setTimeout(connectWebSocket, 3000);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      setIsConnected(false);
+    };
+  }, [gameId]);
 
   useEffect(() => {
     if (gameId) {
-      onGetGame(gameId);
+      // onGetGame(gameId);
+      connectWebSocket();
     }
   }, [gameId]);
 
