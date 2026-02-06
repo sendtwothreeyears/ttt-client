@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { createGame, makeMove, getGame, resetGame } from "../api";
+import { makeMove, resetGame } from "../api";
 import { useParams, Link } from "react-router-dom";
 import "./index.css";
 
@@ -102,7 +102,7 @@ function GameView() {
   const [winLine, setWinLine] = useState<number[] | null>(null);
   const [modalInfo, setModalInfo] = useState<{ winner: string; flawless: boolean } | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
+  const [, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
   const connectWebSocket = useCallback(() => {
@@ -164,19 +164,6 @@ function GameView() {
     };
   }, [gameId, connectWebSocket]);
 
-  const onGetGame = async (gameId: string) => {
-    try {
-      const response = await getGame(gameId);
-      const {
-        room: { board },
-      } = response.data;
-
-      setGameState(board);
-    } catch (error) {
-      console.log("Error in getting game:", gameId);
-    }
-  };
-
   const onResetGame = async (roomId: string) => {
     const areYouSure = confirm("Are you sure?");
 
@@ -196,7 +183,7 @@ function GameView() {
 
   const placePiece = async (position: number) => {
     try {
-      const updatedBoard = await makeMove(position, gameId);
+      const updatedBoard = await makeMove(position, gameId!);
       const boardData = updatedBoard.data;
       const { boardState, currentPlayer, won, winLine: wl } = boardData;
 
@@ -211,7 +198,7 @@ function GameView() {
         setModalInfo({ winner, flawless });
       }
     } catch (error) {
-      const message = error.response?.data?.error ?? error.message;
+      const message = (error as any).response?.data?.error ?? (error as Error).message;
       setErrorMsg(message);
     }
   };
