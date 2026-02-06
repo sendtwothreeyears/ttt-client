@@ -1,5 +1,5 @@
 import axios, { type AxiosResponse } from "axios";
-const baseUrl = `http://localhost:3001/api`;
+const baseUrl = import.meta.env.VITE_API_BASE_URL || `http://localhost:3001/api`;
 
 export async function createGame(): Promise<AxiosResponse<any>> {
   return axios.post(`${baseUrl}/create`);
