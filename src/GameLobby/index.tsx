@@ -1,20 +1,20 @@
 import { useState, useEffect } from "react";
-import { createGame, getGames } from "../tic-tac-toe";
+import { createGame, getGames, deleteGame } from "../tic-tac-toe";
 import { useNavigate, Link } from "react-router-dom";
 import "./index.css";
 import "../globals.css";
 
-interface GameLobbyProps {
-  onGameSelect: (gameId: string) => void;
-}
+type Cell = string | null;
 
-type GameState = {
-  gameId: number;
+type RoomSummary = {
+  room: string;
+  board: Cell[];
   currentPlayer: string;
+  won: boolean;
 };
 
 function GameLobby() {
-  const [rooms, setRooms] = useState([]);
+  const [rooms, setRooms] = useState<RoomSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -50,44 +50,43 @@ function GameLobby() {
     }
   };
 
-  const deleteGame = async (gameId: string, e: React.MouseEvent) => {
-    // e.stopPropagation(); // Prevent triggering game selection
-    // try {
-    //   const response = await fetch(`/api/games/${gameId}`, {
-    //     method: "DELETE",
-    //   });
-    //   if (response.ok) {
-    //     await fetchGames(); // Refresh the games list
-    //   } else {
-    //     console.error("Failed to delete game");
-    //   }
-    // } catch (error) {
-    //   console.error("Failed to delete game:", error);
-    // }
+
+  const onDeleteGame = async (gameId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    const areYouSure = confirm("Are you sure you want to delete this game?");
+    if (areYouSure) {
+      try {
+        await deleteGame(gameId);
+        await fetchGames();
+      } catch (error) {
+        console.error("Failed to delete game:", error);
+      }
+    }
   };
 
-  const getGameStatus = (game: GameState) => {
-    // if (roomwinner) {
-    //   return `Winner: ${game.winner}`;
-    // }
-    // const moveCount = game.board.filter((cell) => cell !== null).length;
-    // if (moveCount === 0) {
-    //   return "New Game";
-    // }
-    // return `In Progress (${game.currentPlayer}'s turn)`;
+  const getGameStatus = (game: RoomSummary): string => {
+    if (game.won) {
+      const winner = game.currentPlayer === "X" ? "O" : "X";
+      return `Winner: ${winner}`;
+    }
+    const moveCount = game.board.filter((cell) => cell !== null).length;
+    if (moveCount === 0) {
+      return "New Game";
+    }
+    return `In Progress (${game.currentPlayer}'s turn)`;
   };
 
-  const getGameProgress = (game: GameState) => {
-    // const totalMoves = game.board.filter((cell) => cell !== null).length;
-    // return `${totalMoves}/9 moves`;
+  const getGameProgress = (game: RoomSummary): string => {
+    const totalMoves = game.board.filter((cell) => cell !== null).length;
+    return `${totalMoves}/9 moves`;
   };
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  const generateBoard = (board) => {
-    return board.map((cell, index) => {
+  const generateBoard = (board: Cell[]): React.ReactNode[] => {
+    return board.map((cell: Cell, index: number) => {
       const hasPiece = board[index] !== null;
       return (
         <div className={`cell ${hasPiece && "cell--active"}`} key={index}>
@@ -97,12 +96,15 @@ function GameLobby() {
     });
   };
 
-  const generateRooms = (): any => {
+  const generateRooms = (): React.ReactNode[] => {
     return rooms.map((room) => {
       return (
-        <Link to={`/games/${room.room}`} key={room.room}>
+        <Link to={`/games/${room.room}`} key={room.room} className="Room--link">
           <div key={room.room} className="Room--overview">
             <div>Room ID: {room.room}</div>
+            <div>{getGameStatus(room)}</div>
+            <div>{getGameProgress(room)}</div>
+            <button onClick={(e) => onDeleteGame(room.room, e)}>Delete</button>
             <div className="container Room--container">
               <div className="board-container">
                 <div className="board">{generateBoard(room.board)}</div>

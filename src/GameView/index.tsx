@@ -1,17 +1,14 @@
 import { useState, useEffect } from "react";
 import { createGame, makeMove, getGame, resetGame } from "../tic-tac-toe";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import "./index.css";
 
-interface GameViewProps {
-  gameId: string;
-  onBackToLobby: () => void;
-}
+type Cell = string | null;
 
 function GameView() {
   const { gameId } = useParams();
-  let [gameState, setGameState] = useState<(string | null)[]>([]);
-  let [currentPlayer, setCurrentPlayer] = useState<string>("X");
+  const [gameState, setGameState] = useState<Cell[]>([]);
+  const [currentPlayer, setCurrentPlayer] = useState<string>("X");
 
   useEffect(() => {
     if (gameId) {
@@ -63,12 +60,13 @@ function GameView() {
         alert(`The winner is: ${winner}`);
       }
     } catch (error) {
-      alert(`There is an error: ${error.response.data.error}`);
+      const message = error.response?.data?.error ?? error.message;
+      alert(`There is an error: ${message}`);
     }
   };
 
-  const generateBoard = () => {
-    return gameState.map((cell, index) => {
+  const generateBoard = (): React.ReactNode[] => {
+    return gameState.map((cell: Cell, index: number) => {
       const hasPiece = gameState[index] !== null;
       return (
         <div
@@ -88,6 +86,7 @@ function GameView() {
 
   return (
     <div className="App--container">
+      <div>Room ID: {gameId}</div>
       <div className="App--board-container">
         <div className="App--board">{generateBoard()}</div>
         <div className="App--history"></div>
@@ -97,6 +96,9 @@ function GameView() {
       </div>
       <div className="App--info">
         <button onClick={() => onResetGame(gameId)}>Reset game</button>
+      </div>
+      <div className="App--info">
+        <Link to="/">Return to lobby</Link>
       </div>
     </div>
   );

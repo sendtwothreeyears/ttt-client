@@ -1,3 +1,8 @@
+.Room--link {
+  text-decoration: none;
+  color: inherit;
+}
+
 .Room--overview {
   padding: 1em;
   border: 1px solid #333;

@@ -24,3 +24,7 @@ export function getGame(gameId: string): Promise<AxiosResponse<any>> {
 export function getGames(): Promise<AxiosResponse<any>> {
   return axios.get(`${baseUrl}/games`);
 }
+
+export function deleteGame(gameId: string): Promise<AxiosResponse<any>> {
+  return axios.delete(`${baseUrl}/games/${gameId}`);
+}
