@@ -53,8 +53,6 @@ function GameView() {
       setGameState(boardState);
       setCurrentPlayer(currentPlayer);
 
-      console.log("won", won);
-
       if (won) {
         const winner = boardState.currentPlayer === "X" ? "O" : "X";
         alert(`The winner is: ${winner}`);
