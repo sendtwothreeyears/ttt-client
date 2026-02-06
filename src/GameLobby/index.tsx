@@ -11,6 +11,7 @@ type RoomSummary = {
   board: Cell[];
   currentPlayer: string;
   won: boolean;
+  winLine: number[] | null;
 };
 
 function GameLobby() {
@@ -86,10 +87,14 @@ function GameLobby() {
 
   const generateBoard = (board: Cell[]): React.ReactNode[] => {
     return board.map((cell: Cell, index: number) => {
-      const hasPiece = board[index] !== null;
+      const hasPiece = cell !== null;
       return (
-        <div className={`cell ${hasPiece && "cell--active"}`} key={index}>
-          {board[index]}
+        <div
+          className={`cell ${hasPiece ? "cell--active" : ""}`}
+          data-piece={cell ?? undefined}
+          key={index}
+        >
+          {cell}
         </div>
       );
     });
@@ -103,7 +108,12 @@ function GameLobby() {
             <div>Room ID: {room.room}</div>
             <div>{getGameStatus(room)}</div>
             <div>{getGameProgress(room)}</div>
-            <button onClick={(e) => onDeleteGame(room.room, e)}>Delete</button>
+            <button
+              className="Lobby--btn--danger"
+              onClick={(e) => onDeleteGame(room.room, e)}
+            >
+              Delete
+            </button>
             <div className="container Room--container">
               <div className="board-container">
                 <div className="board Lobby--board">
@@ -125,22 +135,12 @@ function GameLobby() {
         margin: "0 auto",
       }}
     >
-      <h1>Tic Tac Toe Lobby</h1>
+      <h1 className="Lobby--header">Tic Tac Toe Lobby</h1>
 
       <button
         onClick={createNewGame}
         disabled={loading}
-        style={{
-          padding: "15px 30px",
-          fontSize: "18px",
-          backgroundColor: "#4CAF50",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: loading ? "not-allowed" : "pointer",
-          marginBottom: "30px",
-          opacity: loading ? 0.6 : 1,
-        }}
+        className="Lobby--btn"
       >
         {loading ? "Creating..." : "New Game"}
       </button>
@@ -149,15 +149,7 @@ function GameLobby() {
 
       <button
         onClick={fetchGames}
-        style={{
-          padding: "10px 20px",
-          fontSize: "14px",
-          backgroundColor: "#f0f0f0",
-          border: "1px solid #ddd",
-          borderRadius: "5px",
-          cursor: "pointer",
-          marginTop: "30px",
-        }}
+        className="Lobby--btn--secondary"
       >
         Refresh Games
       </button>

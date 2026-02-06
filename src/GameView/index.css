@@ -1,10 +1,12 @@
 .App--container {
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  background: #0a0a0a;
+  color: #e0e0e0;
 }
 
 .App--board {
@@ -12,11 +14,11 @@
   height: 500px;
   display: flex;
   flex-wrap: wrap;
-  margin-right: 0.5em;
+  position: relative;
 }
 
 .App--board-container {
-  background: #fff;
+  background: transparent;
   display: flex;
 }
 
@@ -27,21 +29,227 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 1px solid #333;
+  border: 1px solid #00b4d8;
+  box-shadow: inset 0 0 8px rgba(0, 180, 216, 0.15);
   cursor: pointer;
+  font-size: 4rem;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.App--cell:hover {
+  background: rgba(0, 180, 216, 0.05);
 }
 
 .App--cell--active {
-  background-color: #e9e9e9;
+  background-color: rgba(0, 180, 216, 0.05);
+}
+
+.App--cell[data-piece="X"] {
+  color: #ff2d55;
+  text-shadow:
+    0 0 7px #ff2d55,
+    0 0 20px #ff2d55,
+    0 0 40px #ff2d55aa;
+}
+
+.App--cell[data-piece="O"] {
+  color: #00d4ff;
+  text-shadow:
+    0 0 7px #00d4ff,
+    0 0 20px #00d4ff,
+    0 0 40px #00d4ffaa;
 }
 
 .App--info {
   margin-top: 0.5em;
+  color: #b0b0b0;
+}
+
+.App--info a {
+  color: #00b4d8;
+  text-decoration: none;
+  transition: text-shadow 0.2s;
+}
+
+.App--info a:hover {
+  text-shadow: 0 0 8px #00b4d8;
+}
+
+.App--info button {
+  padding: 10px 24px;
+  font-size: 14px;
+  background: transparent;
+  color: #00b4d8;
+  border: 1px solid #00b4d8;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, background 0.2s;
+}
+
+.App--info button:hover {
+  box-shadow: 0 0 12px rgba(0, 180, 216, 0.4);
+  background: rgba(0, 180, 216, 0.1);
+}
+
+/* SVG win-line overlay */
+.WinLine--overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.WinLine--line {
+  stroke: #00d4ff;
+  stroke-width: 6;
+  stroke-linecap: round;
+  filter: url(#winLineGlow);
+}
+
+/* Victory modal */
+.Modal--backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.Modal--content {
+  background: #111;
+  border: 1px solid #00b4d8;
+  border-radius: 12px;
+  padding: 3rem 4rem;
+  text-align: center;
+  box-shadow:
+    0 0 30px rgba(0, 180, 216, 0.3),
+    0 0 60px rgba(0, 180, 216, 0.1);
+  animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.Modal--flawless {
+  font-size: 1.2rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #ffd700;
+  text-shadow:
+    0 0 7px #ffd700,
+    0 0 20px #ffd700,
+    0 0 40px #ffa500;
+  margin-bottom: 0.5rem;
+  animation: flawlessPulse 1.5s ease-in-out infinite;
+}
+
+.Modal--winner {
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  margin-bottom: 2rem;
+}
+
+.Modal--winner--X {
+  color: #ff2d55;
+  text-shadow:
+    0 0 10px #ff2d55,
+    0 0 30px #ff2d55,
+    0 0 60px #ff2d55aa;
+}
+
+.Modal--winner--O {
+  color: #00d4ff;
+  text-shadow:
+    0 0 10px #00d4ff,
+    0 0 30px #00d4ff,
+    0 0 60px #00d4ffaa;
+}
+
+.Modal--btn {
+  padding: 12px 36px;
+  font-size: 16px;
+  background: transparent;
+  color: #00b4d8;
+  border: 1px solid #00b4d8;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, background 0.2s;
+}
+
+.Modal--btn:hover {
+  box-shadow: 0 0 14px rgba(0, 180, 216, 0.5);
+  background: rgba(0, 180, 216, 0.1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes flawlessPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Error modal */
+.Modal--content--error {
+  border-color: #ff2d55;
+  box-shadow:
+    0 0 30px rgba(255, 45, 85, 0.3),
+    0 0 60px rgba(255, 45, 85, 0.1);
+}
+
+.Modal--taunt {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ff2d55;
+  text-shadow:
+    0 0 7px #ff2d55,
+    0 0 20px #ff2d55,
+    0 0 40px #ff2d55aa;
+  margin-bottom: 2rem;
+  max-width: 400px;
+  animation: tauntShake 0.4s ease-out;
+}
+
+.Modal--btn--error {
+  color: #ff2d55;
+  border-color: #ff2d55;
+}
+
+.Modal--btn--error:hover {
+  box-shadow: 0 0 14px rgba(255, 45, 85, 0.5);
+  background: rgba(255, 45, 85, 0.1);
+}
+
+@keyframes tauntShake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+  100% { transform: translateX(0); }
 }
 
 .history {
   display: flex;
   flex-direction: column;
   width: 300px;
-  background: red;
 }

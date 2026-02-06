@@ -5,10 +5,103 @@ import "./index.css";
 
 type Cell = string | null;
 
+function ErrorModal({
+  message,
+  currentPlayer,
+  onClose,
+}: {
+  message: string;
+  currentPlayer: string;
+  onClose: () => void;
+}) {
+  const taunt = message.includes("already occupied")
+    ? `YOU FOOL. ${currentPlayer} has already placed a piece here!`
+    : message.includes("already won")
+      ? "IT'S OVER. The battle has already been decided!"
+      : `PATHETIC. ${message}`;
+
+  return (
+    <div className="Modal--backdrop" onClick={onClose}>
+      <div className="Modal--content Modal--content--error" onClick={(e) => e.stopPropagation()}>
+        <div className="Modal--taunt">{taunt}</div>
+        <button className="Modal--btn Modal--btn--error" onClick={onClose}>
+          Dismiss
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function VictoryModal({
+  winner,
+  flawless,
+  onClose,
+}: {
+  winner: string;
+  flawless: boolean;
+  onClose: () => void;
+}) {
+  return (
+    <div className="Modal--backdrop" onClick={onClose}>
+      <div className="Modal--content" onClick={(e) => e.stopPropagation()}>
+        {flawless && (
+          <div className="Modal--flawless">FLAWLESS VICTORY</div>
+        )}
+        <div className={`Modal--winner Modal--winner--${winner}`}>
+          {winner} WINS
+        </div>
+        <button className="Modal--btn" onClick={onClose}>
+          Continue
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function WinLineOverlay({ winLine }: { winLine: number[] }) {
+  // Map cell index to center coordinates (percentage-based for a 3x3 grid)
+  const cellCenter = (idx: number) => {
+    const col = idx % 3;
+    const row = Math.floor(idx / 3);
+    return {
+      x: col * 33.33 + 16.665,
+      y: row * 33.33 + 16.665,
+    };
+  };
+
+  const start = cellCenter(winLine[0]);
+  const end = cellCenter(winLine[winLine.length - 1]);
+
+  return (
+    <svg className="WinLine--overlay" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <defs>
+        <filter id="winLineGlow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="1.5" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      <line
+        className="WinLine--line"
+        x1={start.x}
+        y1={start.y}
+        x2={end.x}
+        y2={end.y}
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
 function GameView() {
   const { gameId } = useParams();
   const [gameState, setGameState] = useState<Cell[]>([]);
   const [currentPlayer, setCurrentPlayer] = useState<string>("X");
+  const [winLine, setWinLine] = useState<number[] | null>(null);
+  const [modalInfo, setModalInfo] = useState<{ winner: string; flawless: boolean } | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -28,10 +121,12 @@ function GameView() {
       try {
         const data = JSON.parse(event.data);
         const {
-          room: { board },
+          room: { board, currentPlayer, winLine: wl },
         } = data;
         if (data.type === "gameUpdate") {
           setGameState(board);
+          setCurrentPlayer(currentPlayer);
+          setWinLine(wl ?? null);
         }
       } catch (error) {
         console.error("Failed to parse WebSocket message:", error);
@@ -59,10 +154,15 @@ function GameView() {
 
   useEffect(() => {
     if (gameId) {
-      // onGetGame(gameId);
       connectWebSocket();
     }
-  }, [gameId]);
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+    };
+  }, [gameId, connectWebSocket]);
 
   const onGetGame = async (gameId: string) => {
     try {
@@ -86,6 +186,8 @@ function GameView() {
         const { room } = response.data;
         setGameState(room.board);
         setCurrentPlayer(room.currentPlayer);
+        setWinLine(null);
+        setModalInfo(null);
       } catch (error) {
         console.log("Error in fetching", error);
       }
@@ -96,31 +198,35 @@ function GameView() {
     try {
       const updatedBoard = await makeMove(position, gameId);
       const boardData = updatedBoard.data;
-      const { boardState, currentPlayer, won } = boardData;
+      const { boardState, currentPlayer, won, winLine: wl } = boardData;
 
       setGameState(boardState);
       setCurrentPlayer(currentPlayer);
+      setWinLine(wl ?? null);
 
       if (won) {
-        const winner = boardState.currentPlayer === "X" ? "O" : "X";
-        alert(`The winner is: ${winner}`);
+        const winner = currentPlayer === "X" ? "O" : "X";
+        const totalMoves = boardState.filter((c: Cell) => c !== null).length;
+        const flawless = totalMoves <= 5;
+        setModalInfo({ winner, flawless });
       }
     } catch (error) {
       const message = error.response?.data?.error ?? error.message;
-      alert(`There is an error: ${message}`);
+      setErrorMsg(message);
     }
   };
 
   const generateBoard = (): React.ReactNode[] => {
     return gameState.map((cell: Cell, index: number) => {
-      const hasPiece = gameState[index] !== null;
+      const hasPiece = cell !== null;
       return (
         <div
-          className={`App--cell ${hasPiece && "App--cell--active"}`}
+          className={`App--cell ${hasPiece ? "App--cell--active" : ""}`}
+          data-piece={cell ?? undefined}
           key={index}
           onClick={() => placePiece(index)}
         >
-          {gameState[index]}
+          {cell}
         </div>
       );
     });
@@ -134,7 +240,10 @@ function GameView() {
     <div className="App--container">
       <div>Room ID: {gameId}</div>
       <div className="App--board-container">
-        <div className="App--board">{generateBoard()}</div>
+        <div className="App--board">
+          {generateBoard()}
+          {winLine && <WinLineOverlay winLine={winLine} />}
+        </div>
         <div className="App--history"></div>
       </div>
       <div className="App--info">
@@ -146,6 +255,20 @@ function GameView() {
       <div className="App--info">
         <Link to="/">Return to lobby</Link>
       </div>
+      {modalInfo && (
+        <VictoryModal
+          winner={modalInfo.winner}
+          flawless={modalInfo.flawless}
+          onClose={() => setModalInfo(null)}
+        />
+      )}
+      {errorMsg && (
+        <ErrorModal
+          message={errorMsg}
+          currentPlayer={currentPlayer}
+          onClose={() => setErrorMsg(null)}
+        />
+      )}
     </div>
   );
 }

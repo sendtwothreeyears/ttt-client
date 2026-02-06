@@ -1,3 +1,9 @@
+body {
+  background: #0a0a0a;
+  color: #e0e0e0;
+  margin: 0;
+}
+
 .container {
   width: 100%;
   height: 100vh;
@@ -16,7 +22,7 @@
 }
 
 .board-container {
-  background: #fff;
+  background: transparent;
   display: flex;
 }
 
@@ -27,12 +33,27 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 1px solid #333;
+  border: 1px solid #00b4d8;
   cursor: pointer;
+  font-weight: bold;
+}
+
+.cell[data-piece="X"] {
+  color: #ff2d55;
+  text-shadow:
+    0 0 4px #ff2d55,
+    0 0 10px #ff2d55;
+}
+
+.cell[data-piece="O"] {
+  color: #00d4ff;
+  text-shadow:
+    0 0 4px #00d4ff,
+    0 0 10px #00d4ff;
 }
 
 .cell--active {
-  background-color: #e9e9e9;
+  background-color: transparent;
 }
 
 .info {
