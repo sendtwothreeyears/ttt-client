@@ -1,48 +1,193 @@
-.Room--link {
-  text-decoration: none;
-  color: inherit;
-}
-
-.Room--overview {
-  padding: 1em;
-  border: 1px solid #00b4d8;
-  border-radius: 0.5em;
-  margin: 0.25em;
-  background: rgba(0, 180, 216, 0.03);
-  box-shadow: 0 0 8px rgba(0, 180, 216, 0.15);
-  transition: box-shadow 0.2s, border-color 0.2s;
-
+/* ── Lobby layout ── */
+.Lobby {
+  width: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  padding: 20px 20px 40px;
+  overflow: hidden;
+  user-select: none;
+}
 
-  a {
-    text-decoration: underline;
-    font-size: 16px;
-    cursor: pointer;
-    color: #00b4d8;
+.Lobby--header {
+  color: #e0e0e0;
+  margin-bottom: 16px;
+}
+
+/* ── Sphere viewport ── */
+.Sphere--viewport {
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
+  width: 100%;
+  height: 560px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  margin: 10px 0;
+  cursor: grab;
+  touch-action: none;
+}
+
+.Sphere--viewport:active {
+  cursor: grabbing;
+}
+
+/* Ambient glow behind the sphere */
+.Sphere--ambient {
+  position: absolute;
+  width: 720px;
+  height: 720px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 180, 216, 0.1);
+  background: radial-gradient(
+    circle,
+    rgba(0, 180, 216, 0.04) 0%,
+    rgba(0, 180, 216, 0.015) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+  animation: ambientPulse 5s ease-in-out infinite;
+}
+
+@keyframes ambientPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.65;
   }
 }
 
-.Room--overview:hover {
-  box-shadow: 0 0 18px rgba(0, 180, 216, 0.35);
-  border-color: #00d4ff;
+/* ── Globe (the rotating 3D container) ── */
+.Sphere--globe {
+  transform-style: preserve-3d;
+  will-change: transform;
+  position: relative;
 }
 
-.Room--container {
-  height: initial !important;
-  margin: 10px auto;
+/* ── Wireframe rings ── */
+.Sphere--ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 180, 216, 0.07);
+  pointer-events: none;
+  transform-style: preserve-3d;
 }
 
-.Lobby--rooms-container {
+.Sphere--ring--equator {
+  transform: rotateX(90deg);
+}
+
+/* ── Cards on the sphere surface ── */
+.Sphere--card {
+  position: absolute;
+  width: 200px;
+  left: -100px;
+  top: -155px;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  transition: opacity 0.05s linear;
+}
+
+.Sphere--card-inner {
+  background: rgba(10, 10, 10, 0.88);
+  border: 1px solid rgba(0, 180, 216, 0.3);
+  border-radius: 12px;
+  padding: 14px 16px;
+  backdrop-filter: blur(12px);
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 0 20px rgba(0, 180, 216, 0.08),
+    inset 0 0 30px rgba(0, 180, 216, 0.03);
+  transition:
+    box-shadow 0.25s,
+    border-color 0.25s;
 }
 
+.Sphere--card-inner:hover {
+  border-color: rgba(0, 180, 216, 0.6);
+  box-shadow:
+    0 0 30px rgba(0, 180, 216, 0.2),
+    inset 0 0 30px rgba(0, 180, 216, 0.05);
+}
+
+/* Curved-surface edge lighting simulation */
+.Sphere--card-inner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.2) 0%,
+    transparent 18%,
+    transparent 82%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+  pointer-events: none;
+}
+
+.Sphere--card-id {
+  font-size: 11px;
+  color: #666;
+  font-family: monospace;
+  letter-spacing: 0.05em;
+}
+
+.Sphere--card-status {
+  font-size: 13px;
+  color: #00b4d8;
+  font-weight: 600;
+}
+
+.Sphere--card-progress {
+  font-size: 11px;
+  color: #555;
+}
+
+.Sphere--card-board {
+  margin: 6px 0;
+}
+
+/* ── Room link ── */
+.Room--link {
+  text-decoration: none;
+  color: inherit;
+  z-index: 9000;
+}
+
+/* ── Mini board inside cards ── */
 .Lobby--board {
-  width: 200px !important;
-  height: 200px !important;
+  width: 150px !important;
+  height: 150px !important;
 }
 
+/* ── Empty state ── */
+.Sphere--empty {
+  position: absolute;
+  color: #444;
+  font-size: 15px;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+}
+
+/* ── Hint text ── */
+.Lobby--hint {
+  color: #444;
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  margin: 12px 0;
+}
+
+/* ── Buttons ── */
 .Lobby--btn {
   padding: 15px 30px;
   font-size: 18px;
@@ -51,8 +196,10 @@
   border: 1px solid #00b4d8;
   border-radius: 5px;
   cursor: pointer;
-  margin-bottom: 30px;
-  transition: box-shadow 0.2s, background 0.2s;
+  margin-bottom: 10px;
+  transition:
+    box-shadow 0.2s,
+    background 0.2s;
 }
 
 .Lobby--btn:hover {
@@ -73,8 +220,10 @@
   border: 1px solid #444;
   border-radius: 5px;
   cursor: pointer;
-  margin-top: 30px;
-  transition: box-shadow 0.2s, border-color 0.2s;
+  margin-top: 6px;
+  transition:
+    box-shadow 0.2s,
+    border-color 0.2s;
 }
 
 .Lobby--btn--secondary:hover {
@@ -84,20 +233,19 @@
 
 .Lobby--btn--danger {
   padding: 6px 14px;
-  font-size: 13px;
+  font-size: 12px;
   background: transparent;
   color: #ff2d55;
   border: 1px solid #ff2d55;
   border-radius: 4px;
   cursor: pointer;
-  transition: box-shadow 0.2s, background 0.2s;
+  margin-top: 2px;
+  transition:
+    box-shadow 0.2s,
+    background 0.2s;
 }
 
 .Lobby--btn--danger:hover {
   box-shadow: 0 0 10px rgba(255, 45, 85, 0.3);
   background: rgba(255, 45, 85, 0.1);
-}
-
-.Lobby--header {
-  color: #e0e0e0;
 }
