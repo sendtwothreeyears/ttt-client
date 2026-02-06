@@ -106,7 +106,9 @@ function GameLobby() {
             <button onClick={(e) => onDeleteGame(room.room, e)}>Delete</button>
             <div className="container Room--container">
               <div className="board-container">
-                <div className="board">{generateBoard(room.board)}</div>
+                <div className="board Lobby--board">
+                  {generateBoard(room.board)}
+                </div>
               </div>
             </div>
           </div>
@@ -143,7 +145,7 @@ function GameLobby() {
         {loading ? "Creating..." : "New Game"}
       </button>
 
-      <div>{generateRooms()}</div>
+      <div className="Lobby--rooms-container">{generateRooms()}</div>
 
       <button
         onClick={fetchGames}

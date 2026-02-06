@@ -7,7 +7,7 @@
   padding: 1em;
   border: 1px solid #333;
   border-radius: 0.5em;
-  margin-bottom: 1em;
+  margin: 0.25em;
 
   display: flex;
   flex-direction: column;
@@ -22,4 +22,14 @@
 .Room--container {
   height: initial !important;
   margin: 10px auto;
+}
+
+.Lobby--rooms-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.Lobby--board {
+  width: 200px !important;
+  height: 200px !important;
 }
