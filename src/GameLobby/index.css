@@ -1,0 +1,20 @@
+.Room--overview {
+  padding: 1em;
+  border: 1px solid #333;
+  border-radius: 0.5em;
+  margin-bottom: 1em;
+
+  display: flex;
+  flex-direction: column;
+
+  a {
+    text-decoration: underline;
+    font-size: 16px;
+    cursor: pointer;
+  }
+}
+
+.Room--container {
+  height: initial !important;
+  margin: 10px auto;
+}
